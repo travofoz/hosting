@@ -56,6 +56,25 @@
             color: #666;
             line-height: 1.6;
         }
+        #stop-button {
+            margin-top: 25px;
+            padding: 12px 24px;
+            font-size: 1em;
+            font-weight: 600;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        #stop-button:hover {
+            background-color: #0056b3;
+        }
+        #stop-button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
         code {
             background-color: #e8e8e8;
             padding: 2px 4px;
@@ -67,14 +86,22 @@
 
     <div class="container">
         <h1>Timer Demonstration</h1>
+
+        <!-- TIMER 1: Page Load / Prerender Timer -->
         <div class="timer-box load">
             <div class="timer-label">Page Load Timer</div>
             <div class="timer-display" id="load-timer">0.00s</div>
         </div>
+
+        <!-- TIMER 2: Page Visibility Timer -->
         <div class="timer-box visible">
             <div class="timer-label">Page Visible Timer</div>
             <div class="timer-display" id="visibility-timer">0.00s</div>
         </div>
+        
+        <!-- NEW STOP BUTTON -->
+        <button id="stop-button">Stop Timers</button>
+
         <div class="explanation">
             The <b>Page Load Timer</b> started when the JavaScript on this page was first executed. If this page was prerendered in the background, this timer started counting before you ever saw it.
             <br/><br/>
@@ -83,16 +110,20 @@
     </div>
 
     <script>
+        // --- TIMER 1: Starts immediately on script execution (during prerender) ---
         const loadTimerDisplay = document.getElementById('load-timer');
         const pageLoadTime = Date.now();
-        setInterval(() => {
+        // Store the interval ID in a variable
+        const loadIntervalId = setInterval(() => {
             const elapsedSeconds = (Date.now() - pageLoadTime) / 1000;
             loadTimerDisplay.textContent = `${elapsedSeconds.toFixed(2)}s`;
         }, 50);
 
+
+        // --- TIMER 2: Starts only when the page is visible to the user ---
         const visibilityTimerDisplay = document.getElementById('visibility-timer');
         let visibilityStartTime = 0;
-        let visibilityIntervalId = null;
+        let visibilityIntervalId = null; // We already had this variable
 
         function startVisibilityTimer() {
             if (visibilityStartTime === 0) {
@@ -113,6 +144,19 @@
                 }
             }, { once: true });
         }
+
+        // --- STOP BUTTON LOGIC ---
+        const stopButton = document.getElementById('stop-button');
+        stopButton.addEventListener('click', () => {
+            // Stop both intervals
+            clearInterval(loadIntervalId);
+            clearInterval(visibilityIntervalId);
+            
+            // Provide feedback to the user
+            stopButton.textContent = 'Stopped';
+            stopButton.disabled = true;
+            console.log('Timers stopped.');
+        });
     </script>
 
 </body>
