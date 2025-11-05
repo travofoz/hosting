@@ -3,127 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prerender vs. Visibility Timer</title>
+    <title>Visibility State Test</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Major+Mono+Display&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --background: #0d0d0f;
+            --foreground: #00ff9d;
+            --secondary: #a3a3a3;
+            --accent: #ff00ff;
+            --scanline-opacity: 0.1;
+        }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Roboto Mono', monospace;
             display: flex;
             justify-content: center;
             align-items: center;
-            flex-direction: column;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
-            background-color: #f0f2f5;
-            color: #1c1e21;
-            text-align: center;
+            background-color: var(--background);
+            color: var(--foreground);
+            padding: 20px;
+            overflow: hidden;
+            position: relative;
         }
+        body::after {
+            content: " "; display: block; position: absolute; top: 0; left: 0; right: 0; bottom: 0; width: 100%; height: 100%;
+            background-image: linear-gradient(0deg, transparent 50%, rgba(0, 0, 0, 0.5) 50%);
+            background-size: 100% 4px; animation: scanlines 0.2s linear infinite; pointer-events: none; opacity: var(--scanline-opacity);
+        }
+        @keyframes scanlines { 0% { background-position: 0 0; } 100% { background-position: 0 4px; } }
         .container {
-            padding: 30px;
-            border-radius: 12px;
-            background-color: #ffffff;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 700px;
+            padding: 2.5em;
+            border: 1px solid var(--foreground);
+            background: rgba(13, 13, 15, 0.85);
+            backdrop-filter: blur(5px);
+            z-index: 1;
+            text-shadow: 0 0 5px var(--foreground);
         }
         h1 {
-            margin-top: 0;
-            color: #333;
+            font-family: 'Major Mono Display', monospace; color: var(--accent); margin: 0 0 1.5em 0;
+            text-align: center; text-shadow: 0 0 8px var(--accent);
         }
-        .timer-box {
-            margin: 20px 0;
-            padding: 20px;
-            border-radius: 8px;
-        }
-        .timer-box.load {
-            background-color: #fff0f0;
-            border: 1px solid #ffcccc;
-        }
-        .timer-box.visible {
-            background-color: #e6f9e6;
-            border: 1px solid #ccebdc;
-        }
-        .timer-label {
-            font-size: 1.1em;
-            color: #555;
-            margin-bottom: 8px;
-        }
-        .timer-display {
-            font-size: 3.5em;
-            font-weight: 600;
-            font-family: 'Courier New', Courier, monospace;
-        }
-        .explanation {
-            max-width: 600px;
-            margin-top: 20px;
-            color: #666;
-            line-height: 1.6;
-        }
-        #stop-button {
-            margin-top: 25px;
-            padding: 12px 24px;
-            font-size: 1em;
-            font-weight: 600;
-            color: #fff;
-            background-color: #007bff;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        #stop-button:hover {
-            background-color: #0056b3;
-        }
-        #stop-button:disabled {
-            background-color: #6c757d;
-            cursor: not-allowed;
-        }
-        code {
-            background-color: #e8e8e8;
-            padding: 2px 4px;
-            border-radius: 3px;
-        }
+        video { width: 100%; border: 1px solid var(--accent); margin-bottom: 1.5em; }
+        .explanation { font-size: 0.9em; line-height: 1.8; margin: 0 0 1.5em 0; color: var(--secondary); }
+        .timers-wrapper { display: flex; justify-content: space-between; gap: 20px; margin-bottom: 1.5em; }
+        .timer-box { flex: 1; padding: 1.5em; border: 1px solid; text-align: center; }
+        .timer-box.load { border-color: var(--accent); }
+        .timer-box.visible { border-color: var(--foreground); }
+        .timer-label { font-size: 0.8em; margin-bottom: 0.5em; text-transform: uppercase; color: var(--secondary); }
+        .timer-display { font-size: 2.5em; font-weight: 700; font-family: 'Major Mono Display', monospace; }
+        ul { list-style-type: '>> '; padding-left: 1.2em; color: var(--foreground); font-size: 0.9em; line-height: 1.8; margin: 0; }
+        li { padding-left: 0.5em; margin-bottom: 0.5em; }
+        code { color: var(--accent); }
     </style>
 </head>
 <body>
-
     <div class="container">
-        <h1>Timer Demonstration</h1>
-
-        <!-- TIMER 1: Page Load / Prerender Timer -->
-        <div class="timer-box load">
-            <div class="timer-label">Page Load Timer</div>
-            <div class="timer-display" id="load-timer">0.00s</div>
-        </div>
-
-        <!-- TIMER 2: Page Visibility Timer -->
-        <div class="timer-box visible">
-            <div class="timer-label">Page Visible Timer</div>
-            <div class="timer-display" id="visibility-timer">0.00s</div>
-        </div>
+        <h1>// Visibility Protocol Test</h1>
+        <video autoplay muted loop playsinline src="https://travofoz.github.io/hosting/hacker.mp4"></video>
+        <p class="explanation">This video should only begin playing when the page becomes visible. Browser autoplay restrictions are tied to <code>document.visibilityState</code>. If this video is already playing when you first see the page, the WebView is not adhering to web standards.</p>
         
-        <!-- NEW STOP BUTTON -->
-        <button id="stop-button">Stop Timers</button>
-
-        <div class="explanation">
-            The <b>Page Load Timer</b> started when the JavaScript on this page was first executed. If this page was prerendered in the background, this timer started counting before you ever saw it.
-            <br/><br/>
-            The <b>Page Visible Timer</b> uses the <code>Page Visibility API</code> and only started when the page actually became visible on your screen.
+        <div class="timers-wrapper">
+            <div class="timer-box load">
+                <div class="timer-label">Load/Prerender Time</div>
+                <div class="timer-display" id="load-timer">0.00s</div>
+            </div>
+            <div class="timer-box visible">
+                <div class="timer-label">Visible Time</div>
+                <div class="timer-display" id="visibility-timer">0.00s</div>
+            </div>
         </div>
+
+        <ul>
+            <li>Is the WebView being attached to the view hierarchy in a hidden state (e.g., 1x1 pixel) to incorrectly report its visibility as 'visible'?</li>
+            <li>What is the technical justification for bypassing standard visibility behavior, which disables safeguards against background resource usage?</li>
+            <li>How does this implementation affect viewability metrics for advertising and internal analytics, and is this disclosed?</li>
+        </ul>
     </div>
 
     <script>
-        // --- TIMER 1: Starts immediately on script execution (during prerender) ---
         const loadTimerDisplay = document.getElementById('load-timer');
         const pageLoadTime = Date.now();
-        // Store the interval ID in a variable
-        const loadIntervalId = setInterval(() => {
+        setInterval(() => {
             const elapsedSeconds = (Date.now() - pageLoadTime) / 1000;
             loadTimerDisplay.textContent = `${elapsedSeconds.toFixed(2)}s`;
         }, 50);
 
-
-        // --- TIMER 2: Starts only when the page is visible to the user ---
         const visibilityTimerDisplay = document.getElementById('visibility-timer');
         let visibilityStartTime = 0;
-        let visibilityIntervalId = null; // We already had this variable
+        let visibilityIntervalId = null;
 
         function startVisibilityTimer() {
             if (visibilityStartTime === 0) {
@@ -144,20 +115,6 @@
                 }
             }, { once: true });
         }
-
-        // --- STOP BUTTON LOGIC ---
-        const stopButton = document.getElementById('stop-button');
-        stopButton.addEventListener('click', () => {
-            // Stop both intervals
-            clearInterval(loadIntervalId);
-            clearInterval(visibilityIntervalId);
-            
-            // Provide feedback to the user
-            stopButton.textContent = 'Stopped';
-            stopButton.disabled = true;
-            console.log('Timers stopped.');
-        });
     </script>
-
 </body>
 </html>
