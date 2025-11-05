@@ -49,7 +49,10 @@
             font-family: 'Major Mono Display', monospace; color: var(--accent); margin: 0 0 1.5em 0;
             text-align: center; text-shadow: 0 0 8px var(--accent);
         }
-        video { width: 100%; border: 1px solid var(--accent); margin-bottom: 1.5em; }
+        video { width: 100%; border: 1px solid var(--accent); margin-bottom: 2rem; }
+        video::-webkit-media-controls-panel {
+            opacity: 1 !important;
+        }
         .explanation { font-size: 0.9em; line-height: 1.8; margin: 0 0 1.5em 0; color: var(--secondary); }
         .timers-wrapper { display: flex; justify-content: space-between; gap: 20px; margin-bottom: 1.5em; }
         .timer-box { flex: 1; padding: 1.5em; border: 1px solid; text-align: center; }
