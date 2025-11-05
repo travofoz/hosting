@@ -192,7 +192,24 @@
             <summary>The Exploit: Faking Visibility</summary>
             <div class="details-content">
                 The browser engine inside a WebView determines the <code>visibilityState</code> based on the status of the native view component it lives in. A standard implementation would keep the WebView detached from the main UI, correctly reporting a <code>'hidden'</code> state.<br><br>
-                However, a developer can bypass this. By attaching the WebView to the main application's active UI layout but making it imperceptible (e.g., setting its dimensions to <strong>1x1 pixel with 0% opacity</strong>), they trick the browser engine. The engine sees that its native container is technically part of the visible screen layout and incorrectly reports the page's <code>visibilityState</code> as <code>'visible'</code>. This bypasses all standard browser safeguards.
+                However, a developer can bypass this. A common method is to attach the WebView to the main application's active UI layout but position it far <strong>off-screen</strong> where a user can't see it. A less sophisticated, but also effective, method is the classic <strong>1x1 transparent pixel hack</strong>. In both cases, the engine is tricked: it sees its native container is technically part of the visible screen layout and incorrectly reports the page's <code>visibilityState</code> as <code>'visible'</code>, bypassing all standard browser safeguards.
+            </div>
+        </details>
+        
+        <details>
+            <summary>Why Best Practices Fail: The Analytics Black Hole</summary>
+            <div class="details-content">
+                <p>Even if you are a diligent developer who follows best practices, your analytics are likely being corrupted. The standard safeguard against prerendering is to wrap tracking events in a check like this:</p>
+                <code>if (document.visibilityState === 'visible') { fireAnalytics(); }</code>
+                <p>This page demonstrates that this safeguard is rendered useless if the platform does not adhere to the visibility standard. The check passes immediately in the background because the WebView is already reporting itself as visible.</p>
+                <strong>The Impact on Your Metrics:</strong>
+                <ul>
+                    <li><strong>Time on Page:</strong> This metric is rendered meaningless. A page prerendered for 30 seconds and viewed for 2 seconds will be reported as a 32-second session, creating a false signal of high user engagement.</li>
+                    <li><strong>Viewability Metrics:</strong> For advertisers, an ad is often only "viewable" if it's on screen for a set time (e.g., 2 seconds). This exploit can start that timer in the background, guaranteeing that every prerendered ad is counted and billed as "viewable," even if the user never sees it.</li>
+                    <li><strong>User Journey & Funnels:</strong> It becomes impossible to trust the timing of user actions. Data suggesting a user spent 45 seconds considering a product is unreliable if 43 of those seconds were prerender time.</li>
+                </ul>
+                <strong>Conclusion:</strong>
+                <p>The end result is that all visibility-gated analytics become untrustworthy. For advertisers, the distinction between this and deliberate analytics fraud is purely academic. In most affiliate and ad networks, behavior that generates unseen, billable impressions would be grounds for a formal investigation and could lead to being banned from the platform.</p>
             </div>
         </details>
 
