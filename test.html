@@ -25,7 +25,7 @@
             background-color: var(--background);
             color: var(--foreground);
             padding: 20px;
-            overflow: hidden;
+            overflow-x: hidden;
             position: relative;
         }
         body::after {
@@ -35,6 +35,7 @@
         }
         @keyframes scanlines { 0% { background-position: 0 0; } 100% { background-position: 0 4px; } }
         .container {
+            width: 100%;
             max-width: 700px;
             padding: 2.5em;
             border: 1px solid var(--foreground);
@@ -42,6 +43,7 @@
             backdrop-filter: blur(5px);
             z-index: 1;
             text-shadow: 0 0 5px var(--foreground);
+            box-sizing: border-box;
         }
         h1 {
             font-family: 'Major Mono Display', monospace; color: var(--accent); margin: 0 0 1.5em 0;
@@ -58,12 +60,29 @@
         ul { list-style-type: '>> '; padding-left: 1.2em; color: var(--foreground); font-size: 0.9em; line-height: 1.8; margin: 0; }
         li { padding-left: 0.5em; margin-bottom: 0.5em; }
         code { color: var(--accent); }
+
+        /* --- RESPONSIVE CHANGE --- */
+        @media (max-width: 600px) {
+            .timers-wrapper {
+                flex-direction: column;
+            }
+            .container {
+                padding: 1.5em;
+            }
+            h1 {
+                font-size: 1.5em;
+            }
+            .timer-display {
+                font-size: 2em;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>// Visibility Protocol Test</h1>
-        <video autoplay muted loop playsinline src="https://travofoz.github.io/hosting/hacker.mp4"></video>
+        <!-- --- CONTROLS ATTRIBUTE ADDED --- -->
+        <video autoplay muted loop playsinline controls src="https://travofoz.github.io/hosting/hacker.mp4"></video>
         <p class="explanation">This video should only begin playing when the page becomes visible. Browser autoplay restrictions are tied to <code>document.visibilityState</code>. If this video is already playing when you first see the page, the WebView is not adhering to web standards.</p>
         
         <div class="timers-wrapper">
