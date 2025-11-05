@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prerender vs. Visibility Timer</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+            color: #1c1e21;
+            text-align: center;
+        }
+        .container {
+            padding: 30px;
+            border-radius: 12px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            margin-top: 0;
+            color: #333;
+        }
+        .timer-box {
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .timer-box.load {
+            background-color: #fff0f0;
+            border: 1px solid #ffcccc;
+        }
+        .timer-box.visible {
+            background-color: #e6f9e6;
+            border: 1px solid #ccebdc;
+        }
+        .timer-label {
+            font-size: 1.1em;
+            color: #555;
+            margin-bottom: 8px;
+        }
+        .timer-display {
+            font-size: 3.5em;
+            font-weight: 600;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .explanation {
+            max-width: 600px;
+            margin-top: 20px;
+            color: #666;
+            line-height: 1.6;
+        }
+        code {
+            background-color: #e8e8e8;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Timer Demonstration</h1>
+        <div class="timer-box load">
+            <div class="timer-label">Page Load Timer</div>
+            <div class="timer-display" id="load-timer">0.00s</div>
+        </div>
+        <div class="timer-box visible">
+            <div class="timer-label">Page Visible Timer</div>
+            <div class="timer-display" id="visibility-timer">0.00s</div>
+        </div>
+        <div class="explanation">
+            The <b>Page Load Timer</b> started when the JavaScript on this page was first executed. If this page was prerendered in the background, this timer started counting before you ever saw it.
+            <br/><br/>
+            The <b>Page Visible Timer</b> uses the <code>Page Visibility API</code> and only started when the page actually became visible on your screen.
+        </div>
+    </div>
+
+    <script>
+        const loadTimerDisplay = document.getElementById('load-timer');
+        const pageLoadTime = Date.now();
+        setInterval(() => {
+            const elapsedSeconds = (Date.now() - pageLoadTime) / 1000;
+            loadTimerDisplay.textContent = `${elapsedSeconds.toFixed(2)}s`;
+        }, 50);
+
+        const visibilityTimerDisplay = document.getElementById('visibility-timer');
+        let visibilityStartTime = 0;
+        let visibilityIntervalId = null;
+
+        function startVisibilityTimer() {
+            if (visibilityStartTime === 0) {
+                visibilityStartTime = Date.now();
+                visibilityIntervalId = setInterval(() => {
+                    const elapsedSeconds = (Date.now() - visibilityStartTime) / 1000;
+                    visibilityTimerDisplay.textContent = `${elapsedSeconds.toFixed(2)}s`;
+                }, 50);
+            }
+        }
+
+        if (document.visibilityState === 'visible') {
+            startVisibilityTimer();
+        } else {
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') {
+                    startVisibilityTimer();
+                }
+            }, { once: true });
+        }
+    </script>
+
+</body>
+</html>
